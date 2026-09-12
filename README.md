@@ -3,6 +3,7 @@
 Install [Oars](https://getoars.app/) on macOS (Apple Silicon or Intel) or Linux x86_64:
 
 ```sh
+brew update
 brew install --cask onyedikachi-david/tap/oars
 ```
 

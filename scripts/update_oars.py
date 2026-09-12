@@ -19,7 +19,7 @@ ASSETS = {"macos_arm64": "macos.zip", "macos_x86_64": "macos-x86_64.zip", "linux
 CHECKSUM_PATTERNS = {
     "macos_arm64": r'\barm:\s*"([a-f0-9]{64})"',
     "macos_x86_64": r'\bintel:\s*"([a-f0-9]{64})"',
-    "linux_x86_64": r'on_linux do\s+sha256 "([a-f0-9]{64})"',
+    "linux_x86_64": r'\bx86_64_linux:\s*"([a-f0-9]{64})"',
 }
 
 

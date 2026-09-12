@@ -2,11 +2,11 @@ cask "oars" do
   arch arm: "macos", intel: "macos-x86_64"
 
   version "0.6.0"
+  sha256 arm:          "c9693b2aeaaeaba55f417a6a81a7556aed6dbc2392ea3909e2e12f731cb67e6a",
+         intel:        "11517fdb8eca813ebef08a953731442c2a9a464cd25dc896fb410b3871e3213a",
+         x86_64_linux: "f4b7815af02f2139463c9d4c2a90cc12f74c4daa194e0110c387bb3be0fd217b"
 
   on_macos do
-    sha256 arm:   "c9693b2aeaaeaba55f417a6a81a7556aed6dbc2392ea3909e2e12f731cb67e6a",
-           intel: "11517fdb8eca813ebef08a953731442c2a9a464cd25dc896fb410b3871e3213a"
-
     url "https://github.com/onyedikachi-david/oars/releases/download/v#{version}/oars-v#{version}-#{arch}.zip"
 
     depends_on macos: :big_sur
@@ -21,8 +21,6 @@ cask "oars" do
     EOS
   end
   on_linux do
-    sha256 "f4b7815af02f2139463c9d4c2a90cc12f74c4daa194e0110c387bb3be0fd217b"
-
     url "https://github.com/onyedikachi-david/oars/releases/download/v#{version}/oars-v#{version}-linux-x86_64.tar.gz"
 
     depends_on arch: :x86_64
@@ -35,7 +33,7 @@ cask "oars" do
     artifact "oars.apparmor", target: "~/.local/share/oars/oars.apparmor"
 
     preflight_steps do
-      write "oars.apparmor", <<~EOS
+      write_file "oars.apparmor", <<~EOS
         abi <abi/4.0>,
         include <tunables/global>
         profile oars-homebrew "{{HOMEBREW_PREFIX}}/Caskroom/oars/*/oars-*-linux-ReleaseFast/bin/oars" flags=(unconfined) {
