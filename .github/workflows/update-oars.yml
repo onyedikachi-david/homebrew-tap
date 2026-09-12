@@ -1,0 +1,38 @@
+name: Update Oars
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-oars
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test release validation
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Update from the latest complete release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/update_oars.py
+      - name: Check cask syntax
+        run: ruby -c Casks/oars.rb
+      - name: Commit the verified cask update
+        run: |
+          if git diff --quiet -- Casks/oars.rb; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Casks/oars.rb
+          git commit -m 'chore: update Oars cask'
+          git push origin HEAD:main
