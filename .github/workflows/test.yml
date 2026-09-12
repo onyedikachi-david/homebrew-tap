@@ -4,21 +4,64 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   validate:
-    runs-on: macos-latest
-    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-15-intel, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      - name: Set up Linux desktop runtime
+        if: runner.os == 'Linux'
+        run: |
+          echo /home/linuxbrew/.linuxbrew/bin >> "$GITHUB_PATH"
+          sudo apt-get update
+          sudo apt-get install --yes libgtk-4-1 libwebkitgtk-6.0-4 xvfb xdotool dbus-x11 desktop-file-utils
+      - name: Update Homebrew
+        run: brew update
       - name: Test release validation
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Check cask style
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
         run: brew style Casks/oars.rb
+      - name: Tap this checkout and audit the cask
+        run: |
+          brew tap onyedikachi-david/tap "$GITHUB_WORKSPACE"
+          brew trust --cask onyedikachi-david/tap/oars
+          brew audit --cask onyedikachi-david/tap/oars
+      - name: Install the cask
+        run: brew install --cask --appdir="$RUNNER_TEMP/Applications" onyedikachi-david/tap/oars
+      - name: Launch the installed Mac app
+        if: runner.os == 'macOS'
+        run: python3 scripts/package-smoke.py "$RUNNER_TEMP/Applications/Oars.app/Contents/MacOS/oars"
+      - name: Launch the installed Linux app and validate its menu entry
+        if: runner.os == 'Linux'
+        run: |
+          desktop-file-validate "$HOME/.local/share/applications/app.getoars.desktop"
+          grep -F "$(brew --prefix)/bin/oars" "$HOME/.local/share/applications/app.getoars.desktop"
+          test -f "$HOME/.local/share/icons/hicolor/256x256/apps/app.getoars.png"
+          if [ "$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || true)" = 1 ]; then
+            sudo install -m 644 "$HOME/.local/share/oars/oars.apparmor" /etc/apparmor.d/oars-homebrew
+            sudo apparmor_parser -r /etc/apparmor.d/oars-homebrew
+          fi
+          xvfb-run -a dbus-run-session -- python3 scripts/package-smoke.py "$(command -v oars)"
+      - name: Remove the test installation
+        if: always()
+        run: |
+          if brew list --cask onyedikachi-david/tap/oars >/dev/null 2>&1; then
+            brew uninstall --cask onyedikachi-david/tap/oars
+          fi
+          test ! -e "$RUNNER_TEMP/Applications/Oars.app"
+          test ! -e "$HOME/.local/share/applications/app.getoars.desktop"
