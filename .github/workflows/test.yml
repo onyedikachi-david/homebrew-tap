@@ -38,8 +38,8 @@ jobs:
         run: brew style Casks/oars.rb
       - name: Tap this checkout and audit the cask
         run: |
-          brew tap onyedikachi-david/tap "$GITHUB_WORKSPACE"
           brew trust --cask onyedikachi-david/tap/oars
+          brew tap onyedikachi-david/tap "$GITHUB_WORKSPACE"
           brew audit --cask onyedikachi-david/tap/oars
       - name: Install the cask
         run: brew install --cask --appdir="$RUNNER_TEMP/Applications" onyedikachi-david/tap/oars
