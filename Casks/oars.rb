@@ -1,10 +1,10 @@
 cask "oars" do
   arch arm: "macos", intel: "macos-x86_64"
 
-  version "0.6.0"
-  sha256 arm:          "c9693b2aeaaeaba55f417a6a81a7556aed6dbc2392ea3909e2e12f731cb67e6a",
-         intel:        "11517fdb8eca813ebef08a953731442c2a9a464cd25dc896fb410b3871e3213a",
-         x86_64_linux: "f4b7815af02f2139463c9d4c2a90cc12f74c4daa194e0110c387bb3be0fd217b"
+  version "0.7.0"
+  sha256 arm:          "418bb8c66fa04d1cdd1c997d7961a10856a7e613a66b2a27e6007cfb2a55c41e",
+         intel:        "2c37b5e4b22930d7a58674db48ae967038f51796108ee3c5ff147bc645e677b2",
+         x86_64_linux: "a239dd0da6f3d91c7743d5c869321d7772ad6d055bd3ae0e12048a46343b7895"
 
   on_macos do
     url "https://github.com/onyedikachi-david/oars/releases/download/v#{version}/oars-v#{version}-#{arch}.zip"
